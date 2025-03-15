@@ -4,6 +4,7 @@ import com.example.jobportal.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -11,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
+@EnableWebSecurity // Required to enable custom security configuration
 public class SecurityConfig {
 
     @Bean
@@ -36,7 +38,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll() // Allow registration and login
                         .requestMatchers("/jobs/**").authenticated() // Require authentication for job APIs
                         .anyRequest().authenticated())
-                .httpBasic(); // Use basic authentication for now
+                .httpBasic(httpBasic -> httpBasic.realmName("JobPortal")); // Use basic authentication with a realm name
         return http.build();
     }
 }
