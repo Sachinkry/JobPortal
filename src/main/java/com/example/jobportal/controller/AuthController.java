@@ -15,6 +15,12 @@ public class AuthController {
         this.userService = userService;
     }
 
+    @GetMapping("/register")
+    public ResponseEntity<String> getRegister() {
+        return ResponseEntity.status(405) // Method Not Allowed
+                .body("Method Not Allowed: Use POST to register a user at /auth/register with a JSON body.");
+    }
+
     @PostMapping("/register")
     public ResponseEntity<User> register(@RequestBody UserRequest userRequest) {
         User user = userService.registerUser(

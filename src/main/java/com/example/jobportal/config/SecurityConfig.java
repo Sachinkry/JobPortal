@@ -12,7 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@EnableWebSecurity // Required to enable custom security configuration
+@EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
@@ -21,24 +21,25 @@ public class SecurityConfig {
                 .map(user -> org.springframework.security.core.userdetails.User
                         .withUsername(user.getUsername())
                         .password(user.getPassword())
-                        .roles(user.getRole())
+                        .roles(user.getRole().replace("ROLE_", "")) // Strip ROLE_ prefix here
                         .build())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // Use BCrypt for password encoding
+        return new BCryptPasswordEncoder();
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .csrf(csrf -> csrf.disable()) // Disable CSRF for REST API
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/auth/**").permitAll() // Allow registration and login
-                        .requestMatchers("/jobs/**").authenticated() // Require authentication for job APIs
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/jobs/**").authenticated()
                         .anyRequest().authenticated())
-                .httpBasic(httpBasic -> httpBasic.realmName("JobPortal")); // Use basic authentication with a realm name
+                .httpBasic(httpBasic -> httpBasic.realmName("JobPortal"));
         return http.build();
     }
 }
