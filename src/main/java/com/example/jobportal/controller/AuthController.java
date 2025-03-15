@@ -29,6 +29,11 @@ public class AuthController {
                 userRequest.getRole());
         return ResponseEntity.ok(user);
     }
+
+    @GetMapping("/check")
+    public ResponseEntity<String> checkAuth() {
+        return ResponseEntity.ok("Authentication successful");
+    }
 }
 
 class UserRequest {

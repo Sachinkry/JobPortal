@@ -3,6 +3,7 @@ package com.example.jobportal.controller;
 import com.example.jobportal.model.Job;
 import com.example.jobportal.service.JobService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,5 +47,12 @@ public class JobController {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         List<Job> jobs = jobService.getJobsByRecruiter(username);
         return ResponseEntity.ok(jobs);
+    }
+
+    @PostMapping("/apply")
+    @PreAuthorize("isAuthenticated()") // Requires authentication
+    public ResponseEntity<String> applyForJob(@RequestParam Long jobId, @RequestParam String username) {
+        // Logic to handle job application (e.g., save to database)
+        return ResponseEntity.ok("Application submitted for job ID: " + jobId + " by " + username);
     }
 }
