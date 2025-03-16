@@ -1,16 +1,21 @@
 package com.example.jobportal.config;
 
+import com.example.jobportal.filter.JwtRequestFilter;
 import com.example.jobportal.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -19,7 +24,14 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
+
+    private final JwtRequestFilter jwtRequestFilter;
+
+    public SecurityConfig(@Lazy JwtRequestFilter jwtRequestFilter) {
+        this.jwtRequestFilter = jwtRequestFilter;
+    }
 
     @Bean
     public UserDetailsService userDetailsService(UserRepository userRepository) {
@@ -42,12 +54,16 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/auth/**", "/auth/check").permitAll() // Keep auth endpoints public
-                        .requestMatchers(HttpMethod.GET, "/jobs").permitAll() // Allow public access to GET /jobs
-                        .requestMatchers("/jobs/**").authenticated() // Protect other /jobs endpoints (e.g., /jobs/add)
-                        .anyRequest().authenticated())
-                .httpBasic(httpBasic -> httpBasic.realmName("JobPortal"));
+                        .requestMatchers("/auth/**", "/users/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/jobs").permitAll()
+                        .requestMatchers("/jobs/**").authenticated()
+                        .anyRequest().authenticated());
+        // .addFilterBefore(jwtRequestFilter,
+        // UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 

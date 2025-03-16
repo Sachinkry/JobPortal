@@ -1,20 +1,22 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:8080',
-    headers: {
-        'Content-Type': 'application/json',
-    },
+  baseURL: 'http://localhost:8080',
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
-export const setAuthHeader = (username: string, password: string) => {
-    const encodedCredentials = btoa(`${username}:${password}`);
-    api.defaults.headers.common['Authorization'] = `Basic ${encodedCredentials}`;
-    console.log('Set Authorization header:', api.defaults.headers.common['Authorization']);
-};
-
-export const clearAuthHeader = () => {
-    delete api.defaults.headers.common['Authorization'];
-};
+// Add interceptor to include JWT token in requests
+api.interceptors.request.use(
+  (config) => {
+    const token = sessionStorage.getItem('jwtToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 export default api;

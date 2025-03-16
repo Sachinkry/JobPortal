@@ -17,8 +17,7 @@ public class UserService {
     }
 
     public User registerUser(String username, String password, String role) {
-        String encodedPassword = passwordEncoder.encode(password); // Hash the password
-        // Ensure the role has the ROLE_ prefix
+        String encodedPassword = passwordEncoder.encode(password);
         String formattedRole = role.startsWith("ROLE_") ? role : "ROLE_" + role;
         User user = new User(username, encodedPassword, formattedRole);
         return userRepository.save(user);
@@ -26,5 +25,9 @@ public class UserService {
 
     public User findByUsername(String username) {
         return userRepository.findByUsername(username).orElse(null);
+    }
+
+    public boolean validatePassword(String rawPassword, String encodedPassword) {
+        return passwordEncoder.matches(rawPassword, encodedPassword);
     }
 }
